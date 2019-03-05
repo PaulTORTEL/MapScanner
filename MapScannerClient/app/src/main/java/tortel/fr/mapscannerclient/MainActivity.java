@@ -4,25 +4,32 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
     private Messenger mapScannerService = null;
     private boolean bound;
 
+    private Messenger clientMessenger;
 
+    private static final int REGISTER_CLIENT_MSG = 1;
+    private static final int UNREGISTER_CLIENT_MSG = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        clientMessenger = new Messenger(new IncomingHandler(this));
     }
 
     @Override
@@ -31,9 +38,6 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent("map.scanner.service.intent");
         intent.setComponent(new ComponentName("tortel.fr.mapscanner", "tortel.fr.mapscanner.MSService"));
         bindService(intent, mapScannerConnection, Context.BIND_AUTO_CREATE);
-
-
-
     }
 
     @Override
@@ -41,6 +45,15 @@ public class MainActivity extends AppCompatActivity {
         super.onStop();
         // Unbind from the service
         if (bound) {
+            if (mapScannerService != null) {
+                Message msg = Message.obtain(null, UNREGISTER_CLIENT_MSG);
+                msg.replyTo = clientMessenger;
+                try {
+                    mapScannerService.send(msg);
+                } catch (RemoteException e) {
+                    Log.e("error", e.getMessage());
+                }
+            }
             unbindService(mapScannerConnection);
             bound = false;
         }
@@ -56,7 +69,13 @@ public class MainActivity extends AppCompatActivity {
             // representation of that from the raw IBinder object.
             mapScannerService = new Messenger(service);
             bound = true;
-            sayHello(MainActivity.this.getCurrentFocus());
+            Message msg = Message.obtain(null, REGISTER_CLIENT_MSG);
+            msg.replyTo = clientMessenger;
+            try {
+                mapScannerService.send(msg);
+            } catch (RemoteException e) {
+                Log.e("error", e.getMessage());
+            }
         }
 
         public void onServiceDisconnected(ComponentName className) {
@@ -67,16 +86,28 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    public void sayHello(View v) {
-        if (!bound) return;
-        // Create and send a message to the service, using a supported 'what' value
-        Message msg = Message.obtain(null, 1, 0, 0);
-        try {
-            mapScannerService.send(msg);
-        } catch (RemoteException e) {
-            e.printStackTrace();
+
+    static class IncomingHandler extends Handler {
+        private Context applicationContext;
+
+        IncomingHandler(Context context) {
+            applicationContext = context.getApplicationContext();
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case 0:
+                    Toast.makeText(applicationContext, "hello!", Toast.LENGTH_SHORT).show();
+                    //  msg.replyTo.send();
+                    break;
+                default:
+                    super.handleMessage(msg);
+            }
         }
     }
+
+
 
 
 }

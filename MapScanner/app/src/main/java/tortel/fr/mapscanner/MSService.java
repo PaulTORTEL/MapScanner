@@ -7,12 +7,17 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
+import android.os.RemoteException;
+import android.util.Log;
 import android.widget.Toast;
+
+import tortel.fr.mapscanner.manager.ClientManager;
 
 public class MSService extends Service {
 
-    private Messenger mMessenger;
-    static final int MSG_SAY_HELLO = 1;
+    private Messenger serviceMessenger;
+    private static final int REGISTER_CLIENT_MSG = 1;
+    private static final int UNREGISTER_CLIENT_MSG = 0;
 
 
     public MSService() {
@@ -28,9 +33,24 @@ public class MSService extends Service {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case MSG_SAY_HELLO:
-                    Toast.makeText(applicationContext, "hello!", Toast.LENGTH_SHORT).show();
-                  //  msg.replyTo.send();
+                case REGISTER_CLIENT_MSG:
+                    try {
+                        ClientManager.getInstance().addClient(msg.replyTo);
+                        Toast.makeText(applicationContext, "There are " + ClientManager.getInstance().getClients().size() + " clients", Toast.LENGTH_SHORT).show();
+                        msg.replyTo.send(Message.obtain(null, 0));
+                    } catch (ClientManager.ClientException | RemoteException e) {
+                        Log.d("error", e.getMessage());
+                    }
+
+                    break;
+                case UNREGISTER_CLIENT_MSG:
+                    try {
+                        ClientManager.getInstance().removeClient(msg.replyTo);
+                        Toast.makeText(applicationContext, "There are " + ClientManager.getInstance().getClients().size() + " clients", Toast.LENGTH_SHORT).show();
+                    } catch (ClientManager.ClientException e) {
+                        Log.d("error", e.getMessage());
+                    }
+
                     break;
                 default:
                     super.handleMessage(msg);
@@ -42,8 +62,8 @@ public class MSService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         Toast.makeText(getApplicationContext(), "binding", Toast.LENGTH_SHORT).show();
-        mMessenger = new Messenger(new IncomingHandler(this));
-        return mMessenger.getBinder();
+        serviceMessenger = new Messenger(new IncomingHandler(this));
+        return serviceMessenger.getBinder();
 
     }
 }
