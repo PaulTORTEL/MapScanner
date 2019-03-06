@@ -12,13 +12,12 @@ import android.util.Log;
 import android.widget.Toast;
 
 import tortel.fr.mapscanner.manager.ClientManager;
+import tortel.fr.mapscanner.task.DataRequestTask;
+import tortel.fr.mapscannerlib.MessageUtils;
 
 public class MSService extends Service {
 
     private Messenger serviceMessenger;
-    private static final int REGISTER_CLIENT_MSG = 1;
-    private static final int UNREGISTER_CLIENT_MSG = 0;
-
 
     public MSService() {
     }
@@ -33,17 +32,21 @@ public class MSService extends Service {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case REGISTER_CLIENT_MSG:
+                case MessageUtils.REGISTER_CLIENT_MSG:
                     try {
                         ClientManager.getInstance().addClient(msg.replyTo);
                         Toast.makeText(applicationContext, "There are " + ClientManager.getInstance().getClients().size() + " clients", Toast.LENGTH_SHORT).show();
                         msg.replyTo.send(Message.obtain(null, 0));
+
+                        DataRequestTask task = new DataRequestTask(null, applicationContext);
+                        task.execute();
+
                     } catch (ClientManager.ClientException | RemoteException e) {
                         Log.d("error", e.getMessage());
                     }
 
                     break;
-                case UNREGISTER_CLIENT_MSG:
+                case MessageUtils.UNREGISTER_CLIENT_MSG:
                     try {
                         ClientManager.getInstance().removeClient(msg.replyTo);
                         Toast.makeText(applicationContext, "There are " + ClientManager.getInstance().getClients().size() + " clients", Toast.LENGTH_SHORT).show();
@@ -61,9 +64,7 @@ public class MSService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        Toast.makeText(getApplicationContext(), "binding", Toast.LENGTH_SHORT).show();
         serviceMessenger = new Messenger(new IncomingHandler(this));
         return serviceMessenger.getBinder();
-
     }
 }

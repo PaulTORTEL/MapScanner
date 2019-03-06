@@ -4,16 +4,17 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
+
+import tortel.fr.mapscannerlib.MessageUtils;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -21,9 +22,6 @@ public class MainActivity extends AppCompatActivity {
     private boolean bound;
 
     private Messenger clientMessenger;
-
-    private static final int REGISTER_CLIENT_MSG = 1;
-    private static final int UNREGISTER_CLIENT_MSG = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
         // Unbind from the service
         if (bound) {
             if (mapScannerService != null) {
-                Message msg = Message.obtain(null, UNREGISTER_CLIENT_MSG);
+                Message msg = Message.obtain(null, MessageUtils.UNREGISTER_CLIENT_MSG);
                 msg.replyTo = clientMessenger;
                 try {
                     mapScannerService.send(msg);
@@ -69,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
             // representation of that from the raw IBinder object.
             mapScannerService = new Messenger(service);
             bound = true;
-            Message msg = Message.obtain(null, REGISTER_CLIENT_MSG);
+            Message msg = Message.obtain(null, MessageUtils.REGISTER_CLIENT_MSG);
             msg.replyTo = clientMessenger;
             try {
                 mapScannerService.send(msg);
