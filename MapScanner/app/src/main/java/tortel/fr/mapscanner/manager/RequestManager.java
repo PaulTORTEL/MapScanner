@@ -16,8 +16,6 @@ public class RequestManager {
     private ImageLoader imageLoader;
     private static Context context;
 
-    public static final String clientID = "OCPQVLEMFICIKXWZAK2LX3KBOOSD2JPWCTGKTZFZDWUNGR33";
-    public static final String clientSecret = "ACJGAL4JDM5SCJ3IRTXNEEL53QLUSRUQRKRDM3VGCSWH5J2G";
     public static final String baseUrl = "https://api.foursquare.com/v2/";
 
     private RequestManager(Context context) {

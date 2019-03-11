@@ -12,8 +12,17 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+
+import tortel.fr.mapscannerlib.ApiResponse;
+import tortel.fr.mapscannerlib.Filter;
 import tortel.fr.mapscannerlib.MessageUtils;
 
 public class MainActivity extends AppCompatActivity {
@@ -23,18 +32,21 @@ public class MainActivity extends AppCompatActivity {
 
     private Messenger clientMessenger;
 
+    private TextView test;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         clientMessenger = new Messenger(new IncomingHandler(this));
+        test = this.findViewById(R.id.test);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         Intent intent = new Intent("map.scanner.service.intent");
-        intent.setComponent(new ComponentName("tortel.fr.mapscanner", "tortel.fr.mapscanner.MSService"));
+        intent.setComponent(new ComponentName("tortel.fr.mapscanner", "tortel.fr.mapscanner.MapScannerService"));
         bindService(intent, mapScannerConnection, Context.BIND_AUTO_CREATE);
     }
 
@@ -46,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
             if (mapScannerService != null) {
                 Message msg = Message.obtain(null, MessageUtils.UNREGISTER_CLIENT_MSG);
                 msg.replyTo = clientMessenger;
+
                 try {
                     mapScannerService.send(msg);
                 } catch (RemoteException e) {
@@ -68,6 +81,23 @@ public class MainActivity extends AppCompatActivity {
             mapScannerService = new Messenger(service);
             bound = true;
             Message msg = Message.obtain(null, MessageUtils.REGISTER_CLIENT_MSG);
+            /*TODO: TO REMOVE */
+            Bundle b = new Bundle();
+            Filter f = new Filter();
+            f.setGroup("venues");
+            f.setEndpoint("explore");
+
+            HashMap<String, String> map = new HashMap<>();
+            map.put("limit", "20");
+            map.put("ll", "51.903614,-8.468399");
+            map.put("query", "coffee");
+
+            f.setParams(map);
+
+            b.putSerializable("filter", f);
+            msg.setData(b);
+            /***/
+
             msg.replyTo = clientMessenger;
             try {
                 mapScannerService.send(msg);
@@ -86,26 +116,44 @@ public class MainActivity extends AppCompatActivity {
 
 
     static class IncomingHandler extends Handler {
-        private Context applicationContext;
+        private MainActivity mainActivity;
 
-        IncomingHandler(Context context) {
-            applicationContext = context.getApplicationContext();
+        IncomingHandler(MainActivity mainActivity) {
+            this.mainActivity = mainActivity;
         }
 
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case 0:
-                    Toast.makeText(applicationContext, "hello!", Toast.LENGTH_SHORT).show();
-                    //  msg.replyTo.send();
+                    TextView test = mainActivity.findViewById(R.id.test);
+                    Bundle b = msg.getData();
+                    ApiResponse resp = (ApiResponse) b.getSerializable("venues");
+
+                    StringBuilder sb = new StringBuilder("" + resp.getCode());
+                    sb.append("\n");
+
+                    try {
+                        JSONObject payload = new JSONObject(resp.getPayload());
+                        JSONObject venues = payload.getJSONObject("venue_list");
+                        JSONArray items = venues.getJSONArray("items");
+
+                        for (int i = 0; i < items.length(); i++) {
+                            JSONObject item = items.getJSONObject(i);
+                            JSONObject venue = item.getJSONObject("venue");
+                            sb.append(venue.getString("name"));
+                            sb.append("\n");
+                        }
+
+                        test.setText(sb.toString());
+                    } catch (JSONException e) {
+                        Log.e("error", e.toString());
+                    }
+
                     break;
                 default:
                     super.handleMessage(msg);
             }
         }
     }
-
-
-
-
 }

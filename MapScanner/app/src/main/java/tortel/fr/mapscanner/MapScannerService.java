@@ -3,6 +3,7 @@ package tortel.fr.mapscanner;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -11,15 +12,17 @@ import android.os.RemoteException;
 import android.util.Log;
 import android.widget.Toast;
 
+import tortel.fr.mapscanner.handler.VenuesHandler;
 import tortel.fr.mapscanner.manager.ClientManager;
 import tortel.fr.mapscanner.task.DataRequestTask;
+import tortel.fr.mapscannerlib.Filter;
 import tortel.fr.mapscannerlib.MessageUtils;
 
-public class MSService extends Service {
+public class MapScannerService extends Service {
 
     private Messenger serviceMessenger;
 
-    public MSService() {
+    public MapScannerService() {
     }
 
     static class IncomingHandler extends Handler {
@@ -35,13 +38,11 @@ public class MSService extends Service {
                 case MessageUtils.REGISTER_CLIENT_MSG:
                     try {
                         ClientManager.getInstance().addClient(msg.replyTo);
-                        Toast.makeText(applicationContext, "There are " + ClientManager.getInstance().getClients().size() + " clients", Toast.LENGTH_SHORT).show();
-                        msg.replyTo.send(Message.obtain(null, 0));
+                        DataRequestTask task = new DataRequestTask(new VenuesHandler(msg.replyTo), applicationContext);
+                        Bundle bundle = msg.getData();
+                        task.execute((Filter) bundle.getSerializable("filter"));
 
-                        DataRequestTask task = new DataRequestTask(null, applicationContext);
-                        task.execute();
-
-                    } catch (ClientManager.ClientException | RemoteException e) {
+                    } catch (ClientManager.ClientException e) {
                         Log.d("error", e.getMessage());
                     }
 
@@ -49,7 +50,6 @@ public class MSService extends Service {
                 case MessageUtils.UNREGISTER_CLIENT_MSG:
                     try {
                         ClientManager.getInstance().removeClient(msg.replyTo);
-                        Toast.makeText(applicationContext, "There are " + ClientManager.getInstance().getClients().size() + " clients", Toast.LENGTH_SHORT).show();
                     } catch (ClientManager.ClientException e) {
                         Log.d("error", e.getMessage());
                     }
