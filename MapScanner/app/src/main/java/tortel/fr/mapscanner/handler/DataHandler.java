@@ -38,12 +38,12 @@ public abstract class DataHandler implements IDataHandler {
 
     abstract ApiResponse trimPayload(JSONObject rawData);
 
-    void sendToClient(final String key, final ApiResponse response) {
+    void sendToClient(final String key, final ApiResponse response, final int what) {
         Bundle bundle = new Bundle();
         bundle.putSerializable(key, response);
         Message message = new Message();
-        /*TODO change what */
-        message.what = 0;
+
+        message.what = what;
         message.setData(bundle);
 
         try {

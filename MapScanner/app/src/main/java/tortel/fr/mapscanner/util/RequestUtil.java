@@ -20,11 +20,13 @@ public final class RequestUtil {
         sb.append(filter.getEndpoint());
         sb.append(formatCredentials());
 
-        for (Map.Entry<String, String> entry : filter.getParams().entrySet()) {
-            sb.append("&");
-            sb.append(entry.getKey());
-            sb.append("=");
-            sb.append(entry.getValue());
+        if (filter.getParams() != null) {
+            for (Map.Entry<String, String> entry : filter.getParams().entrySet()) {
+                sb.append("&");
+                sb.append(entry.getKey());
+                sb.append("=");
+                sb.append(entry.getValue());
+            }
         }
 
         return sb.toString();

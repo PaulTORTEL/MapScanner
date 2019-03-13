@@ -6,6 +6,7 @@ public class ApiResponse implements Serializable {
     private int code;
     private String requestId;
     private String payload;
+    private byte[] bitmap;
 
     private String errorDetail;
 
@@ -31,6 +32,14 @@ public class ApiResponse implements Serializable {
 
     public void setPayload(String payload) {
         this.payload = payload;
+    }
+
+    public byte[] getBitmap() {
+        return bitmap;
+    }
+
+    public void setBitmap(byte[] bitmap) {
+        this.bitmap = bitmap;
     }
 
     public String getErrorDetail() {

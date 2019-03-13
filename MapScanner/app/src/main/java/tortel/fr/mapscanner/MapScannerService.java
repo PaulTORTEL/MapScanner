@@ -12,9 +12,11 @@ import android.os.RemoteException;
 import android.util.Log;
 import android.widget.Toast;
 
+import tortel.fr.mapscanner.handler.PhotosHandler;
 import tortel.fr.mapscanner.handler.VenuesHandler;
 import tortel.fr.mapscanner.manager.ClientManager;
 import tortel.fr.mapscanner.task.DataRequestTask;
+import tortel.fr.mapscanner.task.ImageRequestTask;
 import tortel.fr.mapscannerlib.Filter;
 import tortel.fr.mapscannerlib.MessageUtils;
 
@@ -38,10 +40,6 @@ public class MapScannerService extends Service {
                 case MessageUtils.REGISTER_CLIENT_MSG:
                     try {
                         ClientManager.getInstance().addClient(msg.replyTo);
-                        DataRequestTask task = new DataRequestTask(new VenuesHandler(msg.replyTo), applicationContext);
-                        Bundle bundle = msg.getData();
-                        task.execute((Filter) bundle.getSerializable("filter"));
-
                     } catch (ClientManager.ClientException e) {
                         Log.d("error", e.getMessage());
                     }
@@ -54,6 +52,18 @@ public class MapScannerService extends Service {
                         Log.d("error", e.getMessage());
                     }
 
+                    break;
+                case MessageUtils.VENUES_MSG:
+                    // TODO: HISTORY before performing the request
+                    DataRequestTask task = new DataRequestTask(new VenuesHandler(msg.replyTo), applicationContext);
+                    Bundle bundle = msg.getData();
+                    task.execute((Filter) bundle.getSerializable("filter"));
+
+                    break;
+                case MessageUtils.PHOTOS_MSG:
+                    DataRequestTask imgTask = new DataRequestTask(new PhotosHandler(msg.replyTo, applicationContext), applicationContext);
+                    Bundle imgBundle = msg.getData();
+                    imgTask.execute((Filter) imgBundle.getSerializable("filter"));
                     break;
                 default:
                     super.handleMessage(msg);

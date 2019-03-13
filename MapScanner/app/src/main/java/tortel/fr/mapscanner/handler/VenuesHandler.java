@@ -8,6 +8,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import tortel.fr.mapscannerlib.ApiResponse;
+import tortel.fr.mapscannerlib.MessageUtils;
 
 public class VenuesHandler extends DataHandler {
 
@@ -18,13 +19,13 @@ public class VenuesHandler extends DataHandler {
     @Override
     public void onRequestSuccessful(JSONObject rawData) {
         ApiResponse response = trimPayload(rawData);
-        sendToClient("venues", response);
+        sendToClient("venues", response, MessageUtils.VENUES_MSG);
     }
 
     @Override
     public void onRequestFailed(JSONObject rawData) {
         ApiResponse response = trimError(rawData);
-        sendToClient("venues", response);
+        sendToClient("venues", response, MessageUtils.VENUES_MSG);
     }
 
     ApiResponse trimPayload(JSONObject rawData) {

@@ -4,6 +4,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -12,6 +14,7 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -81,7 +84,9 @@ public class MainActivity extends AppCompatActivity {
             mapScannerService = new Messenger(service);
             bound = true;
             Message msg = Message.obtain(null, MessageUtils.REGISTER_CLIENT_MSG);
+
             /*TODO: TO REMOVE */
+            Message msg2 = Message.obtain(null, MessageUtils.VENUES_MSG);
             Bundle b = new Bundle();
             Filter f = new Filter();
             f.setGroup("venues");
@@ -95,12 +100,27 @@ public class MainActivity extends AppCompatActivity {
             f.setParams(map);
 
             b.putSerializable("filter", f);
-            msg.setData(b);
+            msg2.setData(b);
+
+
+            Message msg3 = Message.obtain(null, MessageUtils.PHOTOS_MSG);
+            Bundle b2 = new Bundle();
+            Filter f2 = new Filter();
+            f2.setGroup("venues");
+            f2.setGroupId("4b4a936cf964a520f18a26e3");
+            f2.setEndpoint("photos");
+
+            b2.putSerializable("filter", f2);
+            msg3.setData(b2);
             /***/
 
             msg.replyTo = clientMessenger;
+            msg2.replyTo = clientMessenger;
+            msg3.replyTo = clientMessenger;
             try {
                 mapScannerService.send(msg);
+                mapScannerService.send(msg2);
+                mapScannerService.send(msg3);
             } catch (RemoteException e) {
                 Log.e("error", e.getMessage());
             }
@@ -125,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case 0:
+                case MessageUtils.VENUES_MSG:
                     TextView test = mainActivity.findViewById(R.id.test);
                     Bundle b = msg.getData();
                     ApiResponse resp = (ApiResponse) b.getSerializable("venues");
@@ -151,6 +171,16 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     break;
+
+                case MessageUtils.PHOTOS_MSG:
+                    Log.d("paull", "hekko");
+                    ImageView img = mainActivity.findViewById(R.id.testImg);
+                    Bundle b2 = msg.getData();
+                    ApiResponse resp2 = (ApiResponse) b2.getSerializable("photos");
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(resp2.getBitmap(), 0, resp2.getBitmap().length);
+                    img.setImageBitmap(bitmap);
+                    break;
+
                 default:
                     super.handleMessage(msg);
             }
