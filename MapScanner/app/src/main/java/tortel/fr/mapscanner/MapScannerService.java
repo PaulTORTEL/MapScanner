@@ -55,9 +55,10 @@ public class MapScannerService extends Service {
                     break;
                 case MessageUtils.VENUES_MSG:
                     // TODO: HISTORY before performing the request
-                    DataRequestTask task = new DataRequestTask(new VenuesHandler(msg.replyTo), applicationContext);
                     Bundle bundle = msg.getData();
-                    task.execute((Filter) bundle.getSerializable("filter"));
+                    Filter f = (Filter) bundle.getSerializable("filter");
+                    DataRequestTask task = new DataRequestTask(new VenuesHandler(msg.replyTo, f.getEndpoint()), applicationContext);
+                    task.execute(f);
 
                     break;
                 case MessageUtils.PHOTOS_MSG:

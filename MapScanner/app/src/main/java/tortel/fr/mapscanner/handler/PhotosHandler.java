@@ -60,7 +60,6 @@ public class PhotosHandler extends DataHandler implements IDataHandler, IPicture
         byte[] byteArray = stream.toByteArray();
         response.setBitmap(byteArray);
 
-        Log.d("paull", "image downloaded ! " + byteArray.length);
         sendToClient("photos", response, MessageUtils.PHOTOS_MSG);
     }
 
