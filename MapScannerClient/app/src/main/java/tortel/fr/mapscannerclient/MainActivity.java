@@ -6,12 +6,15 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.ImageView;
@@ -21,27 +24,39 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
+import tortel.fr.mapscannerclient.bean.Place;
+import tortel.fr.mapscannerclient.parser.RecommendationParser;
+import tortel.fr.mapscannerclient.util.MessageUtil;
 import tortel.fr.mapscannerlib.ApiResponse;
 import tortel.fr.mapscannerlib.Filter;
 import tortel.fr.mapscannerlib.MessageUtils;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements RecommendationFragment.OnFragmentInteractionListener {
 
     private Messenger mapScannerService = null;
     private boolean bound;
 
     private Messenger clientMessenger;
 
-    private TextView test;
+
+    private RecommendationFragment recommendationFragment;
+    private PlaceFragment placeFragment;
+
+    private FragmentManager fragmentManager;
+
+    public Messenger getClientMessenger() {
+        return clientMessenger;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         clientMessenger = new Messenger(new IncomingHandler(this));
-        test = this.findViewById(R.id.test);
     }
 
     @Override
@@ -50,6 +65,14 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent("map.scanner.service.intent");
         intent.setComponent(new ComponentName("tortel.fr.mapscanner", "tortel.fr.mapscanner.MapScannerService"));
         bindService(intent, mapScannerConnection, Context.BIND_AUTO_CREATE);
+
+        fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+
+        recommendationFragment = RecommendationFragment.newInstance(new ArrayList<Place>());
+        fragmentTransaction.add(R.id.fragmentContainer, recommendationFragment);
+        fragmentTransaction.commit();
     }
 
     @Override
@@ -82,10 +105,16 @@ public class MainActivity extends AppCompatActivity {
             // representation of that from the raw IBinder object.
             mapScannerService = new Messenger(service);
             bound = true;
-            Message msg = Message.obtain(null, MessageUtils.REGISTER_CLIENT_MSG);
+            Message msgRegistration = Message.obtain(null, MessageUtils.REGISTER_CLIENT_MSG);
+
+            HashMap<String, String> map = new HashMap<>();
+            map.put("limit", "15");
+            map.put("ll", "51.903614,-8.468399");
+
+            Message msgRecommendations = MessageUtil.makeMessage(MessageUtils.VENUES_MSG, "venues", "explore", null, getClientMessenger(), map);
 
             /*TODO: TO REMOVE */
-            Message msg2 = Message.obtain(null, MessageUtils.VENUES_MSG);
+        /*    Message msgRecommendations = Message.obtain(null, MessageUtils.VENUES_MSG);
             Bundle b = new Bundle();
             Filter f = new Filter();
             f.setGroup("venues");
@@ -99,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
             f.setParams(map);
 
             b.putSerializable("filter", f);
-            msg2.setData(b);
+            msgRecommendations.setData(b);
 
 
             Message msg3 = Message.obtain(null, MessageUtils.PHOTOS_MSG);
@@ -120,18 +149,18 @@ public class MainActivity extends AppCompatActivity {
             f3.setEndpoint("hours");
 
             b3.putSerializable("filter", f3);
-            msg4.setData(b3);
-            /***/
+            msg4.setData(b3);*/
+            /**/
 
-            msg.replyTo = clientMessenger;
-            msg2.replyTo = clientMessenger;
-            msg3.replyTo = clientMessenger;
-            msg4.replyTo = clientMessenger;
+            msgRegistration.replyTo = clientMessenger;
+
+          /*  msg3.replyTo = clientMessenger;
+            msg4.replyTo = clientMessenger;*/
             try {
-                mapScannerService.send(msg);
-                mapScannerService.send(msg2);
-                mapScannerService.send(msg3);
-                mapScannerService.send(msg4);
+                mapScannerService.send(msgRegistration);
+                mapScannerService.send(msgRecommendations);
+                /*mapScannerService.send(msg3);
+                mapScannerService.send(msg4);*/
             } catch (RemoteException e) {
                 Log.e("error", e.getMessage());
             }
@@ -145,6 +174,19 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    @Override
+    public void onFragmentInteraction(Uri uri) {
+        int itemSelectedIndex = Integer.valueOf(uri.getQueryParameter("selectedItem"));
+
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        Place place = recommendationFragment.getPlaceList().get(itemSelectedIndex);
+        fragmentTransaction.remove(recommendationFragment);
+        placeFragment = PlaceFragment.newInstance(place);
+        fragmentTransaction.add(R.id.fragmentContainer, placeFragment);
+        fragmentTransaction.commit();
+    }
+
 
     static class IncomingHandler extends Handler {
         private MainActivity mainActivity;
@@ -157,30 +199,34 @@ public class MainActivity extends AppCompatActivity {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case MessageUtils.VENUES_MSG:
-                    TextView test = mainActivity.findViewById(R.id.test);
-                    TextView testHours = mainActivity.findViewById(R.id.testHours);
+                   // TextView test = mainActivity.findViewById(R.id.test);
+                  //  TextView testHours = mainActivity.findViewById(R.id.testHours);
                     Bundle b = msg.getData();
                     ApiResponse resp = (ApiResponse) b.getSerializable("venues");
 
-                    StringBuilder sb = new StringBuilder("" + resp.getCode());
-                    sb.append("\n");
+                   /* StringBuilder sb = new StringBuilder("" + resp.getCode());
+                    sb.append("\n");*/
 
-                    try {
+
 
                         if (resp.getEndpoint().equals("explore")) {
-                            JSONObject payload = new JSONObject(resp.getPayload());
-                            JSONObject venues = payload.getJSONObject("venue_list");
-                            JSONArray items = venues.getJSONArray("items");
+                            List<Place> recommendedPlaces = RecommendationParser.parse(resp);
 
-                            for (int i = 0; i < items.length(); i++) {
-                                JSONObject item = items.getJSONObject(i);
-                                JSONObject venue = item.getJSONObject("venue");
-                                sb.append(venue.getString("name"));
-                                sb.append("\n");
+                            for (Place p : recommendedPlaces) {
+                                Message photoMsg = MessageUtil.makeMessage(MessageUtils.PHOTOS_MSG, "venues", "photos", p.getId(), mainActivity.getClientMessenger(), null);
+                                try {
+                                    mainActivity.mapScannerService.send(photoMsg);
+                                } catch (RemoteException e) {
+                                    Log.e("error", e.toString());
+                                }
                             }
-                            test.setText(sb.toString());
+
+                            if (mainActivity.recommendationFragment.isAdded()) {
+                                mainActivity.recommendationFragment.reloadList(recommendedPlaces);
+                            }
+
                         } else if (resp.getEndpoint().equals("hours")) {
-                            JSONObject payload = new JSONObject(resp.getPayload());
+                           /* JSONObject payload = new JSONObject(resp.getPayload());
                             JSONArray hours = payload.getJSONArray("hours");
                             StringBuilder sb2 = new StringBuilder();
                             for (int i = 0; i < hours.length(); i++) {
@@ -197,21 +243,20 @@ public class MainActivity extends AppCompatActivity {
                                 sb2.append(dayHours.getString("end"));
                                 sb2.append("\n");
                             }
-                            testHours.setText(sb2.toString());
+                            testHours.setText(sb2.toString());*/
                         }
-
-                    } catch (JSONException e) {
-                        Log.e("error", e.toString());
-                    }
 
                     break;
 
                 case MessageUtils.PHOTOS_MSG:
-                    ImageView img = mainActivity.findViewById(R.id.testImg);
-                    Bundle b2 = msg.getData();
-                    ApiResponse resp2 = (ApiResponse) b2.getSerializable("photos");
-                    Bitmap bitmap = BitmapFactory.decodeByteArray(resp2.getBitmap(), 0, resp2.getBitmap().length);
-                    img.setImageBitmap(bitmap);
+                    Bundle bundlePhoto = msg.getData();
+                    ApiResponse responsePhoto = (ApiResponse) bundlePhoto.getSerializable("photos");
+                    if (responsePhoto.getBitmap() != null) {
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(responsePhoto.getBitmap(), 0, responsePhoto.getBitmap().length);
+
+                        // TODO modifier la function pour qu'elle soit externe au fragment
+                        mainActivity.recommendationFragment.setPlaceImage(responsePhoto.getRequestId(), bitmap);
+                    }
                     break;
 
                 default:

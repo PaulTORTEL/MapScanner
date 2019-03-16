@@ -41,7 +41,7 @@ public class MapScannerService extends Service {
                     try {
                         ClientManager.getInstance().addClient(msg.replyTo);
                     } catch (ClientManager.ClientException e) {
-                        Log.d("error", e.getMessage());
+                        Log.e("error", e.getMessage());
                     }
 
                     break;
@@ -49,7 +49,7 @@ public class MapScannerService extends Service {
                     try {
                         ClientManager.getInstance().removeClient(msg.replyTo);
                     } catch (ClientManager.ClientException e) {
-                        Log.d("error", e.getMessage());
+                        Log.e("error", e.getMessage());
                     }
 
                     break;
@@ -62,9 +62,10 @@ public class MapScannerService extends Service {
 
                     break;
                 case MessageUtils.PHOTOS_MSG:
-                    DataRequestTask imgTask = new DataRequestTask(new PhotosHandler(msg.replyTo, applicationContext), applicationContext);
                     Bundle imgBundle = msg.getData();
-                    imgTask.execute((Filter) imgBundle.getSerializable("filter"));
+                    Filter photoFilter = (Filter) imgBundle.getSerializable("filter");
+                    DataRequestTask imgTask = new DataRequestTask(new PhotosHandler(msg.replyTo, applicationContext, photoFilter.getGroupId()), applicationContext);
+                    imgTask.execute(photoFilter);
                     break;
                 default:
                     super.handleMessage(msg);

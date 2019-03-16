@@ -16,11 +16,11 @@ public abstract class DataHandler implements IDataHandler {
 
     private Messenger clientMessenger;
 
-    DataHandler(Messenger clientMessenger) {
+    public DataHandler(Messenger clientMessenger) {
         this.clientMessenger = clientMessenger;
     }
 
-    ApiResponse trimError(JSONObject rawData) {
+    public ApiResponse trimError(JSONObject rawData) {
         ApiResponse response = new ApiResponse();
 
         try {
@@ -36,7 +36,7 @@ public abstract class DataHandler implements IDataHandler {
         return response;
     }
 
-    abstract ApiResponse trimPayload(JSONObject rawData);
+    public abstract ApiResponse trimPayload(JSONObject rawData);
 
     void sendToClient(final String key, final ApiResponse response, final int what) {
         Bundle bundle = new Bundle();

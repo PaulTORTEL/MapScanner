@@ -11,24 +11,26 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 
-import tortel.fr.mapscanner.listener.IDataHandler;
 import tortel.fr.mapscanner.listener.IPictureHandler;
 import tortel.fr.mapscanner.task.ImageRequestTask;
 import tortel.fr.mapscannerlib.ApiResponse;
 import tortel.fr.mapscannerlib.MessageUtils;
 
-public class PhotosHandler extends DataHandler implements IDataHandler, IPictureHandler {
+public class PhotosHandler extends DataHandler implements IPictureHandler {
 
     private Context context;
+    private String placeId;
 
-    public PhotosHandler(Messenger clientMessenger, Context context) {
+    public PhotosHandler(Messenger clientMessenger, Context context, String placeId) {
         super(clientMessenger);
         this.context = context;
+        this.placeId = placeId;
     }
 
     @Override
     public void onRequestSuccessful(JSONObject rawData) {
         ApiResponse response = trimPayload(rawData);
+
         ImageRequestTask task = new ImageRequestTask(this, context);
 
         try {
@@ -54,7 +56,7 @@ public class PhotosHandler extends DataHandler implements IDataHandler, IPicture
     @Override
     public void onPictureDownloaded(Bitmap bitmap) {
         ApiResponse response = new ApiResponse();
-
+        response.setRequestId(placeId);
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
         byte[] byteArray = stream.toByteArray();
@@ -71,7 +73,7 @@ public class PhotosHandler extends DataHandler implements IDataHandler, IPicture
         sendToClient("photos", response, MessageUtils.PHOTOS_MSG);
     }
 
-    ApiResponse trimPayload(JSONObject rawData) {
+    public ApiResponse trimPayload(JSONObject rawData) {
         ApiResponse response = new ApiResponse();
         JSONObject payload = new JSONObject();
 
@@ -83,6 +85,7 @@ public class PhotosHandler extends DataHandler implements IDataHandler, IPicture
             JSONObject resp = rawData.getJSONObject("response");
             JSONObject photos = resp.getJSONObject("photos");
 
+
             JSONArray photoArray = photos.getJSONArray("items");
             JSONObject item = photoArray.getJSONObject(0);
             payload.put("id", item.getString("id"));
@@ -92,10 +95,10 @@ public class PhotosHandler extends DataHandler implements IDataHandler, IPicture
             payload.put("height", item.getInt("height"));
             payload.put("tip", item.getJSONObject("tip"));
 
-            response.setPayload(payload.toString());
         } catch (JSONException e) {
             Log.e("error", e.getMessage());
         }
+        response.setPayload(payload.toString());
 
         return response;
     }

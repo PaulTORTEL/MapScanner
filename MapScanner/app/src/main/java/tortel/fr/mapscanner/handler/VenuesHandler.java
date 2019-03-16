@@ -31,7 +31,7 @@ public class VenuesHandler extends DataHandler {
         sendToClient("venues", response, MessageUtils.VENUES_MSG);
     }
 
-    ApiResponse trimPayload(JSONObject rawData) {
+    public ApiResponse trimPayload(JSONObject rawData) {
         ApiResponse response = new ApiResponse();
         JSONObject payload = new JSONObject();
 

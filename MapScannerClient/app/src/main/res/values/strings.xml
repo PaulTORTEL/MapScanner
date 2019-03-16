@@ -1,3 +1,7 @@
 <resources>
-    <string name="app_name">MapScannerClient</string>
+    <string name="app_name">MapScanner Client</string>
+
+    <string name="recommendations">Recommended places near your location</string>
+
+
 </resources>

@@ -30,9 +30,9 @@ public class ImageRequestTask extends AsyncTask<String, Void, Void> {
                 new Response.Listener<Bitmap>() {
                     @Override
                     public void onResponse(Bitmap bitmap) {
-                        Bitmap compressedBitmap = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth()/2, bitmap.getHeight()/2, true);
-                        Log.d("paull", "image IS CACHED: " +
-                                RequestManager.getInstance(context).getImageLoader().isCached(urls[0], 0, 0));
+                        Bitmap compressedBitmap = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth()/4, bitmap.getHeight()/4, true);
+                      /*  Log.d("paull", "image IS CACHED: " +
+                                RequestManager.getInstance(context).getImageLoader().isCached(urls[0], 0, 0));*/
 
 
                         callback.onPictureDownloaded(compressedBitmap);
