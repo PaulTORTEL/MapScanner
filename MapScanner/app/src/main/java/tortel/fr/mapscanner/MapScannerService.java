@@ -79,4 +79,9 @@ public class MapScannerService extends Service {
         serviceMessenger = new Messenger(new IncomingHandler(this));
         return serviceMessenger.getBinder();
     }
+
+    @Override
+    public boolean onUnbind(Intent intent) {
+        return super.onUnbind(intent);
+    }
 }

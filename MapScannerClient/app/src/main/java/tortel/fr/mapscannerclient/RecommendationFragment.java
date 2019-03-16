@@ -1,19 +1,20 @@
 package tortel.fr.mapscannerclient;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,10 +30,12 @@ public class RecommendationFragment extends Fragment {
 
     private List<Place> placeList;
 
-    private static OnFragmentInteractionListener mListener;
+    private static OnFragmentInteractionListener listener;
 
     private PlaceArrayAdapter placeArrayAdapter;
     private ListView recommendationListView;
+
+    private ProgressBar progressBar;
 
     public RecommendationFragment() {
         // Required empty public constructor
@@ -65,6 +68,9 @@ public class RecommendationFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        TextView title = view.findViewById(R.id.title);
+        title.setText("List of recommended places");
+
         recommendationListView = view.findViewById(R.id.recommendationList);
         placeArrayAdapter = new PlaceArrayAdapter(view.getContext(), placeList);
         recommendationListView.setAdapter(placeArrayAdapter);
@@ -73,33 +79,37 @@ public class RecommendationFragment extends Fragment {
         recommendationListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-
-                // TODO: faire l'uri pour envoyer l'id de l'item cliqué
                 Uri.Builder builder = new Uri.Builder();
                 Uri uri = builder.appendQueryParameter("selectedItem", String.valueOf(i)).build();
-                RecommendationFragment.mListener.onFragmentInteraction(uri);
-               /* Intent intent = new Intent(MainActivity.this, PokemonOverviewActivity.class);
-                Bundle bundle = new Bundle();
+                RecommendationFragment.listener.onFragmentInteraction(uri);
+            }
+        });
 
-                bundle.putInt("pokeId", pokemonList.get(i).getId());
-                intent.putExtras(bundle);
-                startActivity(intent);*/
+        progressBar = view.findViewById(R.id.progressBar);
+
+        FloatingActionButton filterBtn = view.findViewById(R.id.filterBtn);
+
+        filterBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                listener.onFilterBtnClicked();
             }
         });
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if (placeList != null && !placeList.isEmpty() && progressBar.getVisibility() == View.VISIBLE)
+            progressBar.setVisibility(View.GONE);
     }
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
+            listener = (OnFragmentInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
@@ -109,7 +119,7 @@ public class RecommendationFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
+        listener = null;
     }
 
     /**
@@ -123,8 +133,8 @@ public class RecommendationFragment extends Fragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
+        void onFilterBtnClicked();
     }
 
     public void reloadList(List<Place> newList) {
@@ -132,6 +142,10 @@ public class RecommendationFragment extends Fragment {
         placeArrayAdapter.clear();
         placeArrayAdapter.addAll(newList);
         placeArrayAdapter.notifyDataSetChanged();
+
+
+        if (progressBar.getVisibility() == View.VISIBLE)
+            progressBar.setVisibility(View.GONE);
     }
 
     public void setPlaceImage(String id, Bitmap image) {

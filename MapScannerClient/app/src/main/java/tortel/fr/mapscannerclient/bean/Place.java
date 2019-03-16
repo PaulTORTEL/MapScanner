@@ -15,6 +15,11 @@ public class Place implements Serializable {
     private int distance;
     private transient Bitmap image;
 
+    private double lat;
+    private double lng;
+
+    private String category;
+
     public String getId() {
         return id;
     }
@@ -73,5 +78,29 @@ public class Place implements Serializable {
 
     public String getFullAddress() {
         return address + ", " + city + ", " + country;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public double getLat() {
+        return lat;
+    }
+
+    public void setLat(double lat) {
+        this.lat = lat;
+    }
+
+    public double getLng() {
+        return lng;
+    }
+
+    public void setLng(double lng) {
+        this.lng = lng;
     }
 }

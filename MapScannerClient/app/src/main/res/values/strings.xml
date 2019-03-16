@@ -2,6 +2,24 @@
     <string name="app_name">MapScanner Client</string>
 
     <string name="recommendations">Recommended places near your location</string>
+    <string name="place">Details about a place of interest</string>
+    <string name="back">Back to the list</string>
 
+    <string name="title_filter">Filter your research</string>
+    <string name="type_filter">Type of the filter</string>
+    <string name="query_filter">Optional tags</string>
+
+
+    <string name="coffee_filter">Coffee shops</string>
+    <string name="cinema_filter">Cinemas</string>
+    <string name="restaurant_filter">Restaurants</string>
+    <string name="tacos_filter">Tacos shops</string>
+    <string name="game_filter">Game shops</string>
+    <string name="store_filter">Stores</string>
+
+    <string name="radius_filter">Radius</string>
+
+    <string name="save_filter">Save</string>
+    <string name="cancel_filter">Cancel</string>
 
 </resources>

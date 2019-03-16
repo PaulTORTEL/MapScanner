@@ -17,12 +17,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.widget.ImageView;
 import android.widget.TextView;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,10 +27,10 @@ import tortel.fr.mapscannerclient.bean.Place;
 import tortel.fr.mapscannerclient.parser.RecommendationParser;
 import tortel.fr.mapscannerclient.util.MessageUtil;
 import tortel.fr.mapscannerlib.ApiResponse;
-import tortel.fr.mapscannerlib.Filter;
 import tortel.fr.mapscannerlib.MessageUtils;
 
-public class MainActivity extends AppCompatActivity implements RecommendationFragment.OnFragmentInteractionListener {
+public class MainActivity extends AppCompatActivity implements RecommendationFragment.OnFragmentInteractionListener,
+        PlaceFragment.OnPlaceFragmentInteractionListener, FilterFragment.OnFragmentInteractionListener {
 
     private Messenger mapScannerService = null;
     private boolean bound;
@@ -66,13 +61,16 @@ public class MainActivity extends AppCompatActivity implements RecommendationFra
         intent.setComponent(new ComponentName("tortel.fr.mapscanner", "tortel.fr.mapscanner.MapScannerService"));
         bindService(intent, mapScannerConnection, Context.BIND_AUTO_CREATE);
 
-        fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        if (recommendationFragment == null || (!recommendationFragment.isAdded() && !placeFragment.isAdded())) {
 
+            fragmentManager = getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-        recommendationFragment = RecommendationFragment.newInstance(new ArrayList<Place>());
-        fragmentTransaction.add(R.id.fragmentContainer, recommendationFragment);
-        fragmentTransaction.commit();
+            recommendationFragment = RecommendationFragment.newInstance(new ArrayList<Place>());
+            fragmentTransaction.add(R.id.fragmentContainer, recommendationFragment);
+            fragmentTransaction.commit();
+
+        }
     }
 
     @Override
@@ -181,12 +179,41 @@ public class MainActivity extends AppCompatActivity implements RecommendationFra
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
         Place place = recommendationFragment.getPlaceList().get(itemSelectedIndex);
-        fragmentTransaction.remove(recommendationFragment);
         placeFragment = PlaceFragment.newInstance(place);
-        fragmentTransaction.add(R.id.fragmentContainer, placeFragment);
-        fragmentTransaction.commit();
+        fragmentTransaction.replace(R.id.fragmentContainer, placeFragment).addToBackStack(null).commit();
+
     }
 
+    @Override
+    public void onFilterBtnClicked() {
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragmentContainer, new FilterFragment()).addToBackStack(null).commit();
+    }
+
+    @Override
+    public void OnPlaceFragmentBackBtnInteraction() {
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        if (recommendationFragment == null) {
+            recommendationFragment = RecommendationFragment.newInstance(new ArrayList<Place>());
+        }
+        fragmentTransaction.replace(R.id.fragmentContainer, recommendationFragment).commit();
+    }
+
+    @Override
+    public void onFilterSaved() {
+       // TODO perform query
+    }
+
+    @Override
+    public void onFilterCancel() {
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        if (recommendationFragment == null) {
+            recommendationFragment = RecommendationFragment.newInstance(new ArrayList<Place>());
+        }
+        fragmentTransaction.replace(R.id.fragmentContainer, recommendationFragment).commit();
+    }
 
     static class IncomingHandler extends Handler {
         private MainActivity mainActivity;

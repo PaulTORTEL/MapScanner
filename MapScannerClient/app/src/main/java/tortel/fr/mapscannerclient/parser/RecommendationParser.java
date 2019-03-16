@@ -34,11 +34,15 @@ public class RecommendationParser {
 
                 JSONObject location = venue.getJSONObject("location");
 
+                p.setLat(location.getDouble("lat"));
+                p.setLng(location.getDouble("lng"));
                 p.setAddress(location.has("address") ? location.getString("address") : "");
                 p.setCity(location.has("city") ? location.getString("city") : "");
                 p.setDistance(location.has("distance") ? location.getInt("distance") : -1);
                 p.setCountry(location.has("country") ? location.getString("country") : "");
 
+                JSONArray categories = venue.getJSONArray("categories");
+                p.setCategory(categories.getJSONObject(0).getString("name"));
 
                 list.add(p);
             }
