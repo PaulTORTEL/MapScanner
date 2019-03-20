@@ -7,7 +7,7 @@
 
     <string name="title_filter">Filter your research</string>
     <string name="type_filter">Type of the filter</string>
-    <string name="query_filter">Optional tags</string>
+    <string name="query_filter">Optional tags (max 2)</string>
 
 
     <string name="coffee_filter">Coffee shops</string>
@@ -21,5 +21,8 @@
 
     <string name="save_filter">Save</string>
     <string name="cancel_filter">Cancel</string>
+
+    <string name="hours_title">Hours</string>
+    <string name="popular_hours_title">Popular hours</string>
 
 </resources>

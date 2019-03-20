@@ -44,16 +44,29 @@ public class VenuesHandler extends DataHandler {
 
             if (endpoint.equals("explore")) {
                 payload.put("location", resp.getString("headerFullLocation"));
-                payload.put("suggestedRadius", resp.getInt("suggestedRadius"));
+                if (resp.has("suggestedRadius")) {
+                    payload.put("suggestedRadius", resp.getInt("suggestedRadius"));
+                }
+
                 payload.put("totalResults", resp.getInt("totalResults"));
 
                 JSONArray groups = resp.getJSONArray("groups");
                 payload.put("venue_list", groups.getJSONObject(0));
             } else if (endpoint.equals("hours")) {
-                JSONObject hours = resp.getJSONObject("hours");
-                JSONObject popular = resp.getJSONObject("popular"); // ranking of the hours of frequentation
-                payload.put("hours", hours.getJSONArray("timeframes"));
-                payload.put("popular_hours", popular.getJSONArray("timeframes"));
+
+                if (resp.has("hours")) {
+                    JSONObject hours = resp.getJSONObject("hours");
+                    if (hours.has("timesframes")) {
+                        payload.put("hours", hours.getJSONArray("timeframes"));
+                    }
+                }
+
+                if (resp.has("popular")) {
+                    JSONObject popular = resp.getJSONObject("popular"); // ranking of the hours of frequentation
+                    if (popular.has("timeframes")) {
+                        payload.put("popular_hours", popular.getJSONArray("timeframes"));
+                    }
+                }
             } else if (endpoint.equals("search")) {
                 payload.put("venues", resp.getJSONArray("venues"));
             }

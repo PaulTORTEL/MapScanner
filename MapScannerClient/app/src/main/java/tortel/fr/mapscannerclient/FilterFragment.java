@@ -5,11 +5,23 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
-
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.RadioButton;
+import android.widget.SeekBar;
+import android.widget.TextView;
+
+import org.w3c.dom.Text;
+
+import java.util.Set;
+import java.util.TreeSet;
+
+import tortel.fr.mapscannerclient.bean.QueryFilter;
+import tortel.fr.mapscannerclient.manager.SettingManager;
 
 
 public class FilterFragment extends Fragment {
@@ -50,16 +62,107 @@ public class FilterFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+
+        final RadioButton recommendationRadio = view.findViewById(R.id.recommendationsRadioBtn);
+        final RadioButton searchRadio = view.findViewById(R.id.searchRadioBtn);
+
+        final CheckBox coffeeCb = view.findViewById(R.id.coffeeCb);
+        final CheckBox tacosCb = view.findViewById(R.id.tacosCb);
+        final CheckBox restaurantCb = view.findViewById(R.id.restaurantCb);
+        final CheckBox cinemaCb = view.findViewById(R.id.cinemaCb);
+        final CheckBox gameCb = view.findViewById(R.id.gameCb);
+        final CheckBox storeCb = view.findViewById(R.id.storeCb);
+
+        final SeekBar radiusSb = view.findViewById(R.id.radius);
+        final TextView radiusBox = view.findViewById(R.id.radiusBox);
+
+        radiusSb.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                radiusBox.setText(String.valueOf(i + 250) + " m");
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
         Button saveBtn = view.findViewById(R.id.saveBtn);
         Button cancelBtn = view.findViewById(R.id.cancelBtn);
+
+        QueryFilter currentFilter = SettingManager.getInstance().getQueryFilter();
+        radiusSb.setProgress(currentFilter.getRadius() - 250);
+        radiusBox.setText(currentFilter.getRadius() + " m");
+
+        if (currentFilter.getType() == 0) {
+            recommendationRadio.setChecked(true);
+            searchRadio.setChecked(false);
+        } else {
+            recommendationRadio.setChecked(false);
+            searchRadio.setChecked(true);
+        }
+
+        for (String tag : currentFilter.getTags()) {
+            switch(tag) {
+                case "coffee":
+                    coffeeCb.setChecked(true); break;
+                case "tacos":
+                    tacosCb.setChecked(true); break;
+                case "restaurant":
+                    restaurantCb.setChecked(true); break;
+                case "cinema":
+                    cinemaCb.setChecked(true); break;
+                case "game":
+                    gameCb.setChecked(true); break;
+                case "store":
+                    storeCb.setChecked(true); break;
+            }
+        }
+
 
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                // TODO: do something
+                QueryFilter queryFilter = new QueryFilter();
 
+                if (recommendationRadio.isChecked()) {
+                   queryFilter.setType(0);
+                } else if (searchRadio.isChecked()) {
+                   queryFilter.setType(1);
+                }
 
+                Set<String> tags = new TreeSet<>();
+
+                if (coffeeCb.isChecked()) {
+                   tags.add("coffee");
+                }
+                if (tacosCb.isChecked()) {
+                   tags.add("tacos");
+                }
+                if (restaurantCb.isChecked()) {
+                   tags.add("restaurant");
+                }
+                if (cinemaCb.isChecked()) {
+                   tags.add("cinema");
+                }
+                if (gameCb.isChecked()) {
+                   tags.add("game");
+                }
+                if (storeCb.isChecked()) {
+                   tags.add("store");
+                }
+
+                queryFilter.setTags(tags);
+                queryFilter.setRadius(radiusSb.getProgress() + 250);
+
+                SettingManager.getInstance().savePreferences(getActivity(), queryFilter);
                 if (listener != null) {
                     listener.onFilterSaved();
                 }

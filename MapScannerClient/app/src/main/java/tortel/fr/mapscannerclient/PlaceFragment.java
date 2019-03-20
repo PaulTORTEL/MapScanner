@@ -21,6 +21,9 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.Calendar;
+import java.util.Map;
+
 import tortel.fr.mapscannerclient.adapter.CustomMapView;
 import tortel.fr.mapscannerclient.bean.Place;
 
@@ -35,6 +38,8 @@ public class PlaceFragment extends Fragment implements OnMapReadyCallback {
 
     private OnPlaceFragmentInteractionListener listener;
 
+    private TextView hoursView;
+    private TextView popularHoursView;
 
     public PlaceFragment() {
         // Required empty public constructor
@@ -80,12 +85,18 @@ public class PlaceFragment extends Fragment implements OnMapReadyCallback {
         TextView addressTv = view.findViewById(R.id.address);
         TextView distanceTv = view.findViewById(R.id.distance);
         ImageView imgView = view.findViewById(R.id.placeImg);
+        hoursView = view.findViewById(R.id.hoursView);
+        popularHoursView = view.findViewById(R.id.popularHoursView);
 
         nameTv.setText(place.getName());
         categoryTv.setText(place.getCategory());
         addressTv.setText(place.getFullAddress());
         distanceTv.setText(place.getDistance() + " m");
         imgView.setImageBitmap(place.getImage());
+
+        if (place.getWeekHours() != null) {
+            setHoursSection();
+        }
 
         FloatingActionButton backBtn = view.findViewById(R.id.backBtn);
         backBtn.setOnClickListener(new View.OnClickListener() {
@@ -94,6 +105,55 @@ public class PlaceFragment extends Fragment implements OnMapReadyCallback {
                 listener.OnPlaceFragmentBackBtnInteraction();
             }
         });
+    }
+
+    private void setHoursSection() {
+        StringBuilder hoursBuilder = new StringBuilder();
+        StringBuilder popularHoursBuilder = new StringBuilder();
+
+        for (Map.Entry<Integer, String> entry : place.getWeekHours().getRegularHours().entrySet()) {
+            hoursBuilder.append(getDayFromInt(entry.getKey()));
+            hoursBuilder.append(" ");
+            hoursBuilder.append(entry.getValue());
+            hoursBuilder.append("\n");
+        }
+
+        for (Map.Entry<Integer, String> entry : place.getWeekHours().getPopularHours().entrySet()) {
+            popularHoursBuilder.append(getDayFromInt(entry.getKey()));
+            popularHoursBuilder.append(" ");
+            popularHoursBuilder.append(entry.getValue());
+            popularHoursBuilder.append("\n");
+        }
+
+        hoursView.setText(hoursBuilder.toString());
+        popularHoursView.setText(popularHoursBuilder.toString());
+    }
+
+    private String getDayFromInt(int day) {
+        switch(day) {
+            case 1:
+                return "Mon.";
+
+            case 2:
+                return "Tue.";
+
+            case 3:
+                return "Wed.";
+
+            case 4:
+                return "Thu.";
+
+            case 5:
+                return "Fri.";
+
+            case 6:
+                return "Sat.";
+
+            case 7:
+                return "Sun.";
+        }
+
+        return "error";
     }
 
 
@@ -125,6 +185,10 @@ public class PlaceFragment extends Fragment implements OnMapReadyCallback {
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
         }
+    }
+
+    public void reloadPlaceHours() {
+        setHoursSection();
     }
 
     @Override

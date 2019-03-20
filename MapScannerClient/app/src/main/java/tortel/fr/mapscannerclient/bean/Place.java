@@ -20,6 +20,8 @@ public class Place implements Serializable {
 
     private String category;
 
+    private WeekHours weekHours;
+
     public String getId() {
         return id;
     }
@@ -102,5 +104,13 @@ public class Place implements Serializable {
 
     public void setLng(double lng) {
         this.lng = lng;
+    }
+
+    public WeekHours getWeekHours() {
+        return weekHours;
+    }
+
+    public void setWeekHours(WeekHours weekHours) {
+        this.weekHours = weekHours;
     }
 }

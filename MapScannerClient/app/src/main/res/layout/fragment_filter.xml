@@ -7,7 +7,6 @@
     android:padding="20dp"
     tools:context=".FilterFragment">
 
-    <!-- TODO: Update blank fragment layout -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -18,24 +17,26 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
         android:text="@string/type_filter"
         android:textAlignment="center" />
 
     <RadioGroup
+        android:id="@+id/typeRadio"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:checkedButton="@+id/radioButton"
+        android:checkedButton="@+id/recommendationsRadioBtn"
         android:orientation="horizontal">
 
         <RadioButton
-            android:id="@+id/radioButton"
+            android:id="@+id/recommendationsRadioBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Recommendations" />
 
         <RadioButton
-            android:id="@+id/radioButton2"
+            android:id="@+id/searchRadioBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -58,41 +59,41 @@
             android:textAlignment="center" />
 
         <CheckBox
-            android:id="@+id/checkBox"
+            android:id="@+id/coffeeCb"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/coffee_filter" />
 
         <CheckBox
-            android:id="@+id/checkBox5"
+            android:id="@+id/tacosCb"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/tacos_filter" />
 
         <CheckBox
-            android:id="@+id/checkBox2"
+            android:id="@+id/restaurantCb"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/restaurant_filter" />
 
         <CheckBox
-            android:id="@+id/checkBox3"
+            android:id="@+id/cinemaCb"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/cinema_filter" />
 
         <CheckBox
-            android:id="@+id/checkBox4"
+            android:id="@+id/gameCb"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/game_filter" />
 
         <CheckBox
-            android:id="@+id/checkBox6"
+            android:id="@+id/storeCb"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -106,18 +107,33 @@
         android:layout_marginTop="35dp"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/textView2"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/radius_filter"
-            android:textAlignment="center" />
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/radius_filter"
+                android:textAlignment="center" />
+
+            <TextView
+                android:id="@+id/radiusBox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0"
+                android:text="TextView" />
+
+        </LinearLayout>
 
         <SeekBar
-            android:id="@+id/seekBar"
+            android:id="@+id/radius"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:max="1500"
+            android:max="19750"
             android:progress="0" />
 
     </LinearLayout>

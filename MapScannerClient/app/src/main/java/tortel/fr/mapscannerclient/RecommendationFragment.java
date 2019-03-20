@@ -81,7 +81,7 @@ public class RecommendationFragment extends Fragment {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Uri.Builder builder = new Uri.Builder();
                 Uri uri = builder.appendQueryParameter("selectedItem", String.valueOf(i)).build();
-                RecommendationFragment.listener.onFragmentInteraction(uri);
+                RecommendationFragment.listener.onPlaceClicked(uri);
             }
         });
 
@@ -133,7 +133,7 @@ public class RecommendationFragment extends Fragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener {
-        void onFragmentInteraction(Uri uri);
+        void onPlaceClicked(Uri uri);
         void onFilterBtnClicked();
     }
 
@@ -146,6 +146,15 @@ public class RecommendationFragment extends Fragment {
 
         if (progressBar.getVisibility() == View.VISIBLE)
             progressBar.setVisibility(View.GONE);
+    }
+
+    public void invalidateList() {
+        this.placeList = new ArrayList<>();
+        placeArrayAdapter.clear();
+        placeArrayAdapter.notifyDataSetChanged();
+
+        if (progressBar.getVisibility() == View.GONE)
+            progressBar.setVisibility(View.VISIBLE);
     }
 
     public void setPlaceImage(String id, Bitmap image) {

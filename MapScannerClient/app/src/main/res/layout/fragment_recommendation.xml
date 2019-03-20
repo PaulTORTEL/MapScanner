@@ -7,34 +7,10 @@
     android:orientation="vertical"
     tools:context=".RecommendationFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-
-    <TextView
-        android:id="@+id/title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="20dp"
-        android:text="TextView"
-        android:textAlignment="center"
-        android:textSize="22sp" />
-
-    <ProgressBar
-        android:id="@+id/progressBar"
-        style="?android:attr/progressBarStyle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-
-        <ListView
-            android:id="@+id/recommendationList"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-        </ListView>
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/filterBtn"
@@ -44,7 +20,43 @@
             android:layout_margin="30dp"
             android:clickable="true"
             android:focusable="auto"
-            android:src="@drawable/ic_filter" />
+            android:src="@drawable/ic_filter"
+            app:backgroundTint="@color/floatingButtonColor" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="20dp"
+                android:text="TextView"
+                android:textAlignment="center"
+                android:textSize="22sp" />
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                style="?android:attr/progressBarStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:indeterminateDrawable="@drawable/progress"
+                />
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ListView
+                    android:id="@+id/recommendationList"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"/>
+
+            </FrameLayout>
+        </LinearLayout>
     </FrameLayout>
+
 
 </LinearLayout>
