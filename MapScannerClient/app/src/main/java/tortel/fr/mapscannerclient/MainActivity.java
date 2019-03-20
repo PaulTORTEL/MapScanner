@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -23,6 +24,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 
@@ -54,12 +56,11 @@ public class MainActivity extends AppCompatActivity implements ListFragment.OnFr
 
     private LocationManager lm;
 
-
-    /* TO GET REGULAR UPDATES
     private final LocationListener locationListener = new LocationListener() {
-        public void onLocationChanged(Location location) {
-            currentLong = location.getLongitude();
-            currentLat = location.getLatitude();
+        @Override
+        public void onLocationChanged(final Location location) {
+            lm.removeUpdates(this);
+            doPerformQuery(location);
         }
 
         @Override
@@ -76,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements ListFragment.OnFr
         public void onProviderDisabled(String s) {
 
         }
-    };*/
+    };
 
     public Messenger getClientMessenger() {
         return clientMessenger;
@@ -105,11 +106,6 @@ public class MainActivity extends AppCompatActivity implements ListFragment.OnFr
         Intent intent = new Intent("map.scanner.service.intent");
         intent.setComponent(new ComponentName("tortel.fr.mapscanner", "tortel.fr.mapscanner.MapScannerService"));
         bindService(intent, mapScannerConnection, Context.BIND_AUTO_CREATE);
-
-        /* TO GET REGULAR UPDATES
-        if ( PermissionChecker.checkSelfPermission( getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION ) == PackageManager.PERMISSION_GRANTED ) {
-            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 30000, 10, locationListener);
-        }*/
 
         if (listFragment == null || (!listFragment.isAdded() || (placeFragment != null && !placeFragment.isAdded()))) {
 
@@ -141,9 +137,6 @@ public class MainActivity extends AppCompatActivity implements ListFragment.OnFr
             unbindService(mapScannerConnection);
             bound = false;
         }
-       /* TO GET REGULAR UPDATES
-        lm.removeUpdates(locationListener);
-         */
     }
 
     @Override
@@ -153,6 +146,18 @@ public class MainActivity extends AppCompatActivity implements ListFragment.OnFr
     }
 
     public void performQuery() {
+        if (PermissionChecker.checkSelfPermission( getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION ) == PackageManager.PERMISSION_GRANTED ) {
+            Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            if (location == null || location.getTime() <= Calendar.getInstance().getTimeInMillis() - 2 * 60 * 1000) {
+                lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0,0, locationListener);
+            } else {
+                doPerformQuery(location);
+            }
+        }
+    }
+
+    private void doPerformQuery(Location location) {
+
         QueryFilter queryFilter = SettingManager.getInstance().getQueryFilter();
 
         String group = "venues";
@@ -165,7 +170,6 @@ public class MainActivity extends AppCompatActivity implements ListFragment.OnFr
             return;
         }
 
-        Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         double longitude = location.getLongitude();
         double latitude = location.getLatitude();
 
@@ -194,7 +198,7 @@ public class MainActivity extends AppCompatActivity implements ListFragment.OnFr
         try {
             mapScannerService.send(msgPlaces);
         } catch (RemoteException e) {
-            Log.d("error", e.getMessage());
+            Log.e("error", e.getMessage());
         }
     }
 

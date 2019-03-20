@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">MapScanner Client</string>
 
-    <string name="recommendations">Recommended places near your location</string>
+    <string name="list">Places near your location</string>
     <string name="place">Details about a place of interest</string>
     <string name="back">Back to the list</string>
 

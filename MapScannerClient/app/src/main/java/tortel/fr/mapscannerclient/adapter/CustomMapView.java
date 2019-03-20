@@ -6,6 +6,7 @@ import android.view.MotionEvent;
 
 import com.google.android.gms.maps.MapView;
 
+
 public class CustomMapView extends MapView {
 
     public CustomMapView(Context context) {
