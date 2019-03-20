@@ -4,8 +4,11 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.location.Location;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -15,12 +18,9 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.PermissionChecker;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.widget.TextView;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,7 +36,7 @@ import tortel.fr.mapscannerclient.util.MessageUtil;
 import tortel.fr.mapscannerlib.ApiResponse;
 import tortel.fr.mapscannerlib.MessageUtils;
 
-public class MainActivity extends AppCompatActivity implements RecommendationFragment.OnFragmentInteractionListener,
+public class MainActivity extends AppCompatActivity implements ListFragment.OnFragmentInteractionListener,
         PlaceFragment.OnPlaceFragmentInteractionListener, FilterFragment.OnFragmentInteractionListener {
 
     private Messenger mapScannerService = null;
@@ -45,12 +45,38 @@ public class MainActivity extends AppCompatActivity implements RecommendationFra
     private Messenger clientMessenger;
 
 
-    private RecommendationFragment recommendationFragment;
+    private ListFragment listFragment;
     private PlaceFragment placeFragment;
 
     private FragmentManager fragmentManager;
 
     private Place selectedPlace;
+
+    private LocationManager lm;
+
+
+    /* TO GET REGULAR UPDATES
+    private final LocationListener locationListener = new LocationListener() {
+        public void onLocationChanged(Location location) {
+            currentLong = location.getLongitude();
+            currentLat = location.getLatitude();
+        }
+
+        @Override
+        public void onStatusChanged(String s, int i, Bundle bundle) {
+
+        }
+
+        @Override
+        public void onProviderEnabled(String s) {
+
+        }
+
+        @Override
+        public void onProviderDisabled(String s) {
+
+        }
+    };*/
 
     public Messenger getClientMessenger() {
         return clientMessenger;
@@ -70,6 +96,7 @@ public class MainActivity extends AppCompatActivity implements RecommendationFra
         setContentView(R.layout.activity_main);
         clientMessenger = new Messenger(new IncomingHandler(this));
         SettingManager.getInstance().init(this);
+        lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
     }
 
     @Override
@@ -79,13 +106,18 @@ public class MainActivity extends AppCompatActivity implements RecommendationFra
         intent.setComponent(new ComponentName("tortel.fr.mapscanner", "tortel.fr.mapscanner.MapScannerService"));
         bindService(intent, mapScannerConnection, Context.BIND_AUTO_CREATE);
 
-        if (recommendationFragment == null || (!recommendationFragment.isAdded() || !placeFragment.isAdded())) {
+        /* TO GET REGULAR UPDATES
+        if ( PermissionChecker.checkSelfPermission( getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION ) == PackageManager.PERMISSION_GRANTED ) {
+            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 30000, 10, locationListener);
+        }*/
+
+        if (listFragment == null || (!listFragment.isAdded() || (placeFragment != null && !placeFragment.isAdded()))) {
 
             fragmentManager = getSupportFragmentManager();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-            recommendationFragment = RecommendationFragment.newInstance(new ArrayList<Place>());
-            fragmentTransaction.add(R.id.fragmentContainer, recommendationFragment);
+            listFragment = ListFragment.newInstance(new ArrayList<Place>());
+            fragmentTransaction.add(R.id.fragmentContainer, listFragment);
             fragmentTransaction.commit();
 
         }
@@ -109,16 +141,35 @@ public class MainActivity extends AppCompatActivity implements RecommendationFra
             unbindService(mapScannerConnection);
             bound = false;
         }
+       /* TO GET REGULAR UPDATES
+        lm.removeUpdates(locationListener);
+         */
     }
 
-    private void performQuery() {
+    @Override
+    public void onBackPressed() {
+        if (listFragment != null && listFragment.isAdded())
+            finish();
+    }
+
+    public void performQuery() {
         QueryFilter queryFilter = SettingManager.getInstance().getQueryFilter();
 
         String group = "venues";
         StringBuilder endpoint = new StringBuilder();
         HashMap<String, String> params = new HashMap<>();
-        params.put("limit", "1");
-        params.put("ll", "51.903614,-8.468399");
+        params.put("limit", "6");
+
+        if ( PermissionChecker.checkSelfPermission( getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION ) != PackageManager.PERMISSION_GRANTED ) {
+            Log.e("error", "[MAIN ACTIVITY]: Lacking of permission for the location");
+            return;
+        }
+
+        Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        double longitude = location.getLongitude();
+        double latitude = location.getLatitude();
+
+        params.put("ll", String.valueOf(latitude) + "," + String.valueOf(longitude));
 
         if (queryFilter.getType() == 0) {
             endpoint.append("explore");
@@ -157,61 +208,10 @@ public class MainActivity extends AppCompatActivity implements RecommendationFra
             mapScannerService = new Messenger(service);
             bound = true;
             Message msgRegistration = Message.obtain(null, MessageUtils.REGISTER_CLIENT_MSG);
-
-          /*  HashMap<String, String> map = new HashMap<>();
-            map.put("limit", "1");
-            map.put("ll", "51.903614,-8.468399");
-
-            Message msgRecommendations = MessageUtil.makeMessage(MessageUtils.VENUES_MSG, "venues", "explore", null, getClientMessenger(), map);*/
-
-            /*TODO: TO REMOVE */
-        /*    Message msgRecommendations = Message.obtain(null, MessageUtils.VENUES_MSG);
-            Bundle b = new Bundle();
-            Filter f = new Filter();
-            f.setGroup("venues");
-            f.setEndpoint("explore");
-
-            HashMap<String, String> map = new HashMap<>();
-            map.put("limit", "20");
-            map.put("ll", "51.903614,-8.468399");
-            map.put("query", "coffee");
-
-            f.setParams(map);
-
-            b.putSerializable("filter", f);
-            msgRecommendations.setData(b);
-
-
-            Message msg3 = Message.obtain(null, MessageUtils.PHOTOS_MSG);
-            Bundle b2 = new Bundle();
-            Filter f2 = new Filter();
-            f2.setGroup("venues");
-            f2.setGroupId("4b4a936cf964a520f18a26e3");
-            f2.setEndpoint("photos");
-
-            b2.putSerializable("filter", f2);
-            msg3.setData(b2);
-
-            Message msg4 = Message.obtain(null, MessageUtils.VENUES_MSG);
-            Bundle b3 = new Bundle();
-            Filter f3 = new Filter();
-            f3.setGroup("venues");
-            f3.setGroupId("4b4a936cf964a520f18a26e3");
-            f3.setEndpoint("hours");
-
-            b3.putSerializable("filter", f3);
-            msg4.setData(b3);*/
-            /**/
-
             msgRegistration.replyTo = clientMessenger;
 
-          /*  msg3.replyTo = clientMessenger;
-            msg4.replyTo = clientMessenger;*/
             try {
                 mapScannerService.send(msgRegistration);
-                //mapScannerService.send(msgRecommendations);
-                /*mapScannerService.send(msg3);
-                mapScannerService.send(msg4);*/
             } catch (RemoteException e) {
                 Log.e("error", e.getMessage());
             }
@@ -231,7 +231,7 @@ public class MainActivity extends AppCompatActivity implements RecommendationFra
     public void onPlaceClicked(Uri uri) {
 
         int itemSelectedIndex = Integer.valueOf(uri.getQueryParameter("selectedItem"));
-        selectedPlace = recommendationFragment.getPlaceList().get(itemSelectedIndex);
+        selectedPlace = listFragment.getPlaceList().get(itemSelectedIndex);
 
         if (selectedPlace.getWeekHours() == null) {
             Message hoursMsg = MessageUtil.makeMessage(MessageUtils.VENUES_MSG, "venues", "hours", selectedPlace.getId(),
@@ -244,7 +244,6 @@ public class MainActivity extends AppCompatActivity implements RecommendationFra
         }
 
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-
         placeFragment = PlaceFragment.newInstance(selectedPlace);
         fragmentTransaction.replace(R.id.fragmentContainer, placeFragment).addToBackStack(null).commit();
 
@@ -262,23 +261,23 @@ public class MainActivity extends AppCompatActivity implements RecommendationFra
 
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-        if (recommendationFragment == null) {
-            recommendationFragment = RecommendationFragment.newInstance(new ArrayList<Place>());
-        } else if(recommendationFragment.isAdded()) {
+        if (listFragment == null) {
+            listFragment = ListFragment.newInstance(new ArrayList<Place>());
+        } else if(listFragment.isAdded()) {
             return;
         }
-        fragmentTransaction.replace(R.id.fragmentContainer, recommendationFragment).commit();
+        fragmentTransaction.replace(R.id.fragmentContainer, listFragment).commit();
     }
 
     @Override
     public void onFilterSaved() {
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-        if (recommendationFragment == null) {
-            recommendationFragment = RecommendationFragment.newInstance(new ArrayList<Place>());
+        if (listFragment == null) {
+            listFragment = ListFragment.newInstance(new ArrayList<Place>());
         }
-        fragmentTransaction.replace(R.id.fragmentContainer, recommendationFragment).commit();
-        recommendationFragment.invalidateList();
+        fragmentTransaction.replace(R.id.fragmentContainer, listFragment).commit();
+        listFragment.invalidateList();
 
         performQuery();
     }
@@ -287,10 +286,10 @@ public class MainActivity extends AppCompatActivity implements RecommendationFra
     public void onFilterCancel() {
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-        if (recommendationFragment == null) {
-            recommendationFragment = RecommendationFragment.newInstance(new ArrayList<Place>());
+        if (listFragment == null) {
+            listFragment = ListFragment.newInstance(new ArrayList<Place>());
         }
-        fragmentTransaction.replace(R.id.fragmentContainer, recommendationFragment).commit();
+        fragmentTransaction.replace(R.id.fragmentContainer, listFragment).commit();
     }
 
     static class IncomingHandler extends Handler {
@@ -304,8 +303,6 @@ public class MainActivity extends AppCompatActivity implements RecommendationFra
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case MessageUtils.VENUES_MSG:
-                   // TextView test = mainActivity.findViewById(R.id.test);
-                  //  TextView testHours = mainActivity.findViewById(R.id.testHours);
                     Bundle b = msg.getData();
                     ApiResponse resp = (ApiResponse) b.getSerializable("venues");
 
@@ -327,8 +324,8 @@ public class MainActivity extends AppCompatActivity implements RecommendationFra
                             }
                         }
 
-                        if (mainActivity.recommendationFragment.isAdded()) {
-                            mainActivity.recommendationFragment.reloadList(recommendedPlaces);
+                        if (mainActivity.listFragment.isAdded()) {
+                            mainActivity.listFragment.reloadList(recommendedPlaces);
                         }
 
                     } else if (resp.getEndpoint().equals("hours")) {
@@ -345,7 +342,7 @@ public class MainActivity extends AppCompatActivity implements RecommendationFra
                     ApiResponse responsePhoto = (ApiResponse) bundlePhoto.getSerializable("photos");
                     if (responsePhoto.getBitmap() != null) {
                         Bitmap bitmap = BitmapFactory.decodeByteArray(responsePhoto.getBitmap(), 0, responsePhoto.getBitmap().length);
-                        mainActivity.recommendationFragment.setPlaceImage(responsePhoto.getRequestId(), bitmap);
+                        mainActivity.listFragment.setPlaceImage(responsePhoto.getRequestId(), bitmap);
                     }
                     break;
 

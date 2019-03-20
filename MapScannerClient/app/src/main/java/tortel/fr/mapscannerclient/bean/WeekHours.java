@@ -1,9 +1,10 @@
 package tortel.fr.mapscannerclient.bean;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class WeekHours {
+public class WeekHours implements Serializable {
 
     Map<Integer, String> regularHours;
     Map<Integer, String> popularHours;

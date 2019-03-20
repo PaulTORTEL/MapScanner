@@ -6,9 +6,11 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -23,7 +25,7 @@ import tortel.fr.mapscannerclient.adapter.PlaceArrayAdapter;
 import tortel.fr.mapscannerclient.bean.Place;
 
 
-public class RecommendationFragment extends Fragment {
+public class ListFragment extends Fragment {
 
 
     private static final String ARG_PLACE_LIST = "place_list";
@@ -37,12 +39,12 @@ public class RecommendationFragment extends Fragment {
 
     private ProgressBar progressBar;
 
-    public RecommendationFragment() {
+    public ListFragment() {
         // Required empty public constructor
     }
 
-    public static RecommendationFragment newInstance(ArrayList<Place> placeList) {
-        RecommendationFragment fragment = new RecommendationFragment();
+    public static ListFragment newInstance(ArrayList<Place> placeList) {
+        ListFragment fragment = new ListFragment();
         Bundle args = new Bundle();
         args.putSerializable(ARG_PLACE_LIST, placeList);
         fragment.setArguments(args);
@@ -55,6 +57,7 @@ public class RecommendationFragment extends Fragment {
         if (getArguments() != null) {
             placeList = (ArrayList<Place>) getArguments().getSerializable(ARG_PLACE_LIST);
         }
+        setHasOptionsMenu(true);
     }
 
     @Override
@@ -81,20 +84,12 @@ public class RecommendationFragment extends Fragment {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Uri.Builder builder = new Uri.Builder();
                 Uri uri = builder.appendQueryParameter("selectedItem", String.valueOf(i)).build();
-                RecommendationFragment.listener.onPlaceClicked(uri);
+                ListFragment.listener.onPlaceClicked(uri);
             }
         });
 
         progressBar = view.findViewById(R.id.progressBar);
 
-        FloatingActionButton filterBtn = view.findViewById(R.id.filterBtn);
-
-        filterBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                listener.onFilterBtnClicked();
-            }
-        });
     }
 
     @Override
@@ -166,6 +161,28 @@ public class RecommendationFragment extends Fragment {
         }
 
         reloadList(placeList);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_refresh:
+                invalidateList();
+               ((MainActivity)getActivity()).performQuery();
+                break;
+
+            case R.id.action_filter:
+                listener.onFilterBtnClicked();
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     public List<Place> getPlaceList() {

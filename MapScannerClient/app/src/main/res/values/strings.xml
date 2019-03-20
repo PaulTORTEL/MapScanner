@@ -25,4 +25,6 @@
     <string name="hours_title">Hours</string>
     <string name="popular_hours_title">Popular hours</string>
 
+    <string name="map_title">Map</string>
+
 </resources>

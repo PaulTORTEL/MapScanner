@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -6,6 +7,12 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context=".PlaceFragment">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:navigationIcon="?attr/homeAsUpIndicator" />
 
     <ScrollView
         android:layout_width="match_parent"
@@ -20,16 +27,6 @@
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
-
-                <android.support.design.widget.FloatingActionButton
-                    android:id="@+id/backBtn"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="left"
-                    android:layout_margin="10dp"
-                    android:clickable="true"
-                    android:src="@android:drawable/ic_menu_revert"
-                    app:backgroundTint="@color/floatingButtonColor" />
 
                 <ImageView
                     android:id="@+id/placeImg"
@@ -52,6 +49,7 @@
                 android:id="@+id/category"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="15dp"
                 android:text="TextView"
                 android:textAlignment="center" />
 
@@ -69,11 +67,12 @@
 
             <TableLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+                android:layout_marginTop="20dp">
 
                 <TableRow
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent" >
+                    android:layout_height="match_parent">
 
                     <TextView
                         android:id="@+id/hours"
@@ -98,7 +97,7 @@
 
                 <TableRow
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent" >
+                    android:layout_height="match_parent">
 
                     <TextView
                         android:id="@+id/hoursView"
@@ -120,10 +119,23 @@
 
             </TableLayout>
 
+            <TextView
+                android:id="@+id/textView3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="15dp"
+                android:text="@string/map_title"
+                android:textAlignment="center"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
             <tortel.fr.mapscannerclient.adapter.CustomMapView
                 android:id="@+id/mapView"
                 android:layout_width="match_parent"
-                android:layout_height="250dp" />
+                android:layout_height="250dp"
+                android:layout_weight="1" />
+
         </LinearLayout>
     </ScrollView>
 

@@ -1,8 +1,9 @@
 package tortel.fr.mapscannerclient.bean;
 
+import java.io.Serializable;
 import java.util.Set;
 
-public class QueryFilter {
+public class QueryFilter implements Serializable {
     private int type;
     private Set<String> tags;
     private int radius;

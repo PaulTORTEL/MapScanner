@@ -16,8 +16,7 @@ public class CustomMapView extends MapView {
         super(context, attributeSet);
     }
 
-    @Override
-    public boolean onTouchEvent(MotionEvent ev) {
+    private void performTouchEvent(MotionEvent ev) {
         int action = ev.getAction();
         switch (action) {
             case MotionEvent.ACTION_DOWN:
@@ -30,9 +29,20 @@ public class CustomMapView extends MapView {
                 this.getParent().requestDisallowInterceptTouchEvent(false);
                 break;
         }
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent ev) {
+        performTouchEvent(ev);
 
         // Handle MapView's touch events.
         super.onTouchEvent(ev);
         return true;
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        performTouchEvent(ev);
+        return super.dispatchTouchEvent(ev);
     }
 }

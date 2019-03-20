@@ -9,7 +9,11 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -35,6 +39,7 @@ public class PlaceFragment extends Fragment implements OnMapReadyCallback {
     private Place place;
     private CustomMapView mapView;
     private GoogleMap map;
+    private Toolbar toolbar;
 
     private OnPlaceFragmentInteractionListener listener;
 
@@ -60,6 +65,7 @@ public class PlaceFragment extends Fragment implements OnMapReadyCallback {
         if (getArguments() != null) {
             this.place = (Place) getArguments().getSerializable(ARG_PLACE);
         }
+        setHasOptionsMenu(true);
     }
 
     @Override
@@ -90,16 +96,16 @@ public class PlaceFragment extends Fragment implements OnMapReadyCallback {
 
         nameTv.setText(place.getName());
         categoryTv.setText(place.getCategory());
-        addressTv.setText(place.getFullAddress());
-        distanceTv.setText(place.getDistance() + " m");
+        addressTv.setText("Address: " + place.getFullAddress());
+        distanceTv.setText(place.getDistance() + "m away from your current location");
         imgView.setImageBitmap(place.getImage());
 
         if (place.getWeekHours() != null) {
             setHoursSection();
         }
 
-        FloatingActionButton backBtn = view.findViewById(R.id.backBtn);
-        backBtn.setOnClickListener(new View.OnClickListener() {
+        toolbar = getActivity().findViewById(R.id.toolbar);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 listener.OnPlaceFragmentBackBtnInteraction();
