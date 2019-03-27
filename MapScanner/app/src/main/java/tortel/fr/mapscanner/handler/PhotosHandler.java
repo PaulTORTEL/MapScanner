@@ -10,8 +10,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Calendar;
 
+import tortel.fr.mapscanner.bean.ImageVenue;
 import tortel.fr.mapscanner.listener.IPictureHandler;
+import tortel.fr.mapscanner.manager.DatabaseManager;
 import tortel.fr.mapscanner.task.ImageRequestTask;
 import tortel.fr.mapscannerlib.ApiResponse;
 import tortel.fr.mapscannerlib.MessageUtils;
@@ -31,8 +34,6 @@ public class PhotosHandler extends DataHandler implements IPictureHandler {
     public void onRequestSuccessful(JSONObject rawData) {
         ApiResponse response = trimPayload(rawData);
 
-        ImageRequestTask task = new ImageRequestTask(this, context);
-
         try {
             JSONObject payload = new JSONObject(response.getPayload());
             int width = payload.getInt("width");
@@ -40,11 +41,21 @@ public class PhotosHandler extends DataHandler implements IPictureHandler {
 
             String url = payload.getString("prefix") + width + "x" + height + payload.getString("suffix");
 
-            task.execute(url);
+            startImageRequestTask(url);
+            ImageVenue imageVenue = new ImageVenue();
+            imageVenue.setVenueId(placeId);
+            imageVenue.setTimestamp(Calendar.getInstance().getTimeInMillis());
+            imageVenue.setUrl(url);
+            DatabaseManager.getInstance().insertImageVenue(null, context, imageVenue);
 
         } catch (JSONException e) {
             Log.e("error", "Error to create the JSON object based on the payload");
         }
+    }
+
+    public void startImageRequestTask(String url) {
+        ImageRequestTask task = new ImageRequestTask(this, context);
+        task.execute(url);
     }
 
     @Override

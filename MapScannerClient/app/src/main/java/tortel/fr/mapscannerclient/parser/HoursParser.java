@@ -16,7 +16,6 @@ public class HoursParser {
 
         try {
             JSONObject payload = new JSONObject(response.getPayload());
-
             // HOURS
            parseHours(weekHours, "hours", payload);
 

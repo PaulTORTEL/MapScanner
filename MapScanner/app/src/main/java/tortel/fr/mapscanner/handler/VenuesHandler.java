@@ -1,5 +1,6 @@
 package tortel.fr.mapscanner.handler;
 
+import android.content.Context;
 import android.os.Messenger;
 import android.util.Log;
 
@@ -7,16 +8,24 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Calendar;
+
+import tortel.fr.mapscanner.bean.HoursVenue;
+import tortel.fr.mapscanner.manager.DatabaseManager;
 import tortel.fr.mapscannerlib.ApiResponse;
 import tortel.fr.mapscannerlib.MessageUtils;
 
 public class VenuesHandler extends DataHandler {
 
     private String endpoint;
+    private Context context;
+    private String placeId;
 
-    public VenuesHandler(Messenger clientMessenger, final String endpoint) {
+    public VenuesHandler(Messenger clientMessenger, final String endpoint, String placeId, Context context) {
         super(clientMessenger);
         this.endpoint = endpoint;
+        this.context = context;
+        this.placeId = placeId;
     }
 
     @Override
@@ -53,11 +62,16 @@ public class VenuesHandler extends DataHandler {
                 JSONArray groups = resp.getJSONArray("groups");
                 payload.put("venue_list", groups.getJSONObject(0));
             } else if (endpoint.equals("hours")) {
-
+                HoursVenue hoursVenue = new HoursVenue();
+                hoursVenue.setHours("");
+                hoursVenue.setPopularHours("");
+                hoursVenue.setTimestamp(Calendar.getInstance().getTimeInMillis());
+                hoursVenue.setVenueId(placeId);
                 if (resp.has("hours")) {
                     JSONObject hours = resp.getJSONObject("hours");
                     if (hours.has("timesframes")) {
                         payload.put("hours", hours.getJSONArray("timeframes"));
+                        hoursVenue.setHours(hours.toString());
                     }
                 }
 
@@ -65,7 +79,12 @@ public class VenuesHandler extends DataHandler {
                     JSONObject popular = resp.getJSONObject("popular"); // ranking of the hours of frequentation
                     if (popular.has("timeframes")) {
                         payload.put("popular_hours", popular.getJSONArray("timeframes"));
+                        hoursVenue.setPopularHours(popular.toString());
                     }
+                }
+
+                if (!hoursVenue.getHours().isEmpty() || !hoursVenue.getPopularHours().isEmpty()) {
+                    DatabaseManager.getInstance().insertHoursVenue(null, context, hoursVenue);
                 }
             } else if (endpoint.equals("search")) {
                 payload.put("venues", resp.getJSONArray("venues"));

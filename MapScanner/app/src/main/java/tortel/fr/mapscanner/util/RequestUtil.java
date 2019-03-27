@@ -1,7 +1,5 @@
 package tortel.fr.mapscanner.util;
 
-import android.util.Log;
-
 import java.util.Map;
 
 import tortel.fr.mapscanner.manager.RequestManager;
@@ -31,7 +29,6 @@ public final class RequestUtil {
             }
         }
 
-        Log.d("paulll", sb.toString());
         return sb.toString();
     }
 

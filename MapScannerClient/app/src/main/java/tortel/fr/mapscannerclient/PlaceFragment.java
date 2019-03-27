@@ -109,6 +109,10 @@ public class PlaceFragment extends Fragment implements OnMapReadyCallback {
     }
 
     private void setHoursSection() {
+        if (place == null) {
+            return;
+        }
+
         StringBuilder hoursBuilder = new StringBuilder();
         StringBuilder popularHoursBuilder = new StringBuilder();
 

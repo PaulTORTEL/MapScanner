@@ -143,12 +143,16 @@ public class MainActivity extends AppCompatActivity implements ListFragment.OnFr
     public void onBackPressed() {
         if (listFragment != null && listFragment.isAdded())
             finish();
+
+        if (placeFragment != null && placeFragment.isAdded())
+            getSupportFragmentManager().popBackStack();
     }
 
     public void performQuery() {
         if (PermissionChecker.checkSelfPermission( getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION ) == PackageManager.PERMISSION_GRANTED ) {
             Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             if (location == null || location.getTime() <= Calendar.getInstance().getTimeInMillis() - 2 * 60 * 1000) {
+                //doPerformQuery(null);
                 lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0,0, locationListener);
             } else {
                 doPerformQuery(location);
@@ -163,15 +167,20 @@ public class MainActivity extends AppCompatActivity implements ListFragment.OnFr
         String group = "venues";
         StringBuilder endpoint = new StringBuilder();
         HashMap<String, String> params = new HashMap<>();
-        params.put("limit", "6");
+        params.put("limit", "10");
 
         if ( PermissionChecker.checkSelfPermission( getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION ) != PackageManager.PERMISSION_GRANTED ) {
             Log.e("error", "[MAIN ACTIVITY]: Lacking of permission for the location");
             return;
         }
 
-        double longitude = location.getLongitude();
-        double latitude = location.getLatitude();
+        double longitude = -8.501582;
+        double latitude = 51.891944;
+
+        if (location != null) {
+            longitude = location.getLongitude();
+            latitude =  location.getLatitude();
+        }
 
         params.put("ll", String.valueOf(latitude) + "," + String.valueOf(longitude));
 
