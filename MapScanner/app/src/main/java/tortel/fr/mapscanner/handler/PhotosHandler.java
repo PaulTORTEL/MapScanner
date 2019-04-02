@@ -53,6 +53,7 @@ public class PhotosHandler extends DataHandler implements IPictureHandler {
         }
     }
 
+    // Start the task to download an image
     public void startImageRequestTask(String url) {
         ImageRequestTask task = new ImageRequestTask(this, context);
         task.execute(url);
@@ -73,6 +74,7 @@ public class PhotosHandler extends DataHandler implements IPictureHandler {
         byte[] byteArray = stream.toByteArray();
         response.setBitmap(byteArray);
 
+        // We forward to the client apps the downloaded image
         sendToClient("photos", response, MessageUtils.PHOTOS_MSG);
     }
 

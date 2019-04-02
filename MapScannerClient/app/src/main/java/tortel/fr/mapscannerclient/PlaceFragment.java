@@ -167,15 +167,19 @@ public class PlaceFragment extends Fragment implements OnMapReadyCallback {
         map = googleMap;
         map.getUiSettings().setMyLocationButtonEnabled(false);
 
+        // Check the permissions
         if ( ContextCompat.checkSelfPermission( getContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION ) == PackageManager.PERMISSION_GRANTED ) {
             if ( ContextCompat.checkSelfPermission( getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION ) == PackageManager.PERMISSION_GRANTED ) {
                 map.setMyLocationEnabled(true);
             }
         }
 
+        // Get the coordinates
         LatLng latLng = new LatLng(place.getLat(), place.getLng());
+        // Add marker
         map.addMarker(new MarkerOptions().position(latLng).title(place.getName()));
 
+        // Move the camera to the given coordinates and set up the camera zoom
         map.moveCamera(CameraUpdateFactory.newLatLng(latLng));
         map.setMinZoomPreference(15);
         map.setMaxZoomPreference(20);

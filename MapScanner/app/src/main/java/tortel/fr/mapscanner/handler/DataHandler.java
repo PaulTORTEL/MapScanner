@@ -47,6 +47,7 @@ public abstract class DataHandler implements IDataHandler {
         message.setData(bundle);
 
         try {
+            // Send the response to the corresponding client
             clientMessenger.send(message);
         } catch (RemoteException e) {
             Log.e("error", e.getMessage());

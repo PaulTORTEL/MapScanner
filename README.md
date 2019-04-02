@@ -3,4 +3,4 @@ This is a middleware service for Android mobile apps. Its goal is to return plac
 
 The middleware hides the complexity of requesting data asynchronously to a REST Web Service. It will actually request, through HTTP calls to the Foursquare's API, data about the user' surroundings.
 
-### Developed from Febuary 2019 - now
+### Developed from Febuary to April 2019

@@ -56,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements ListFragment.OnFr
 
     private LocationManager lm;
 
+    // Location listener that will receive the new user location
     private final LocationListener locationListener = new LocationListener() {
         @Override
         public void onLocationChanged(final Location location) {
@@ -331,6 +332,7 @@ public class MainActivity extends AppCompatActivity implements ListFragment.OnFr
                             Message photoMsg = MessageUtil.makeMessage(MessageUtils.PHOTOS_MSG, "venues", "photos", p.getId(),
                                     mainActivity.getClientMessenger(), null);
                             try {
+                                // We ask to MapScanner to download an image
                                 mainActivity.mapScannerService.send(photoMsg);
                             } catch (RemoteException e) {
                                 Log.e("error", e.toString());
@@ -350,6 +352,7 @@ public class MainActivity extends AppCompatActivity implements ListFragment.OnFr
 
                     break;
 
+                    // A photo has been downloaded
                 case MessageUtils.PHOTOS_MSG:
                     Bundle bundlePhoto = msg.getData();
                     ApiResponse responsePhoto = (ApiResponse) bundlePhoto.getSerializable("photos");

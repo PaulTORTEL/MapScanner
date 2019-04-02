@@ -26,6 +26,7 @@ public class ImageRequestTask extends AsyncTask<String, Void, Void> {
     @Override
     protected Void doInBackground(final String[] urls) {
 
+        // We download the image
         ImageRequest imageRequest = new ImageRequest(urls[0],
                 new Response.Listener<Bitmap>() {
                     @Override

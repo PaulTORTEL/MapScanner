@@ -103,6 +103,7 @@ public class MapScannerService extends Service implements IImageDatabaseListener
 
     private boolean isDataObsolete(long timestamp) {
         Calendar now = Calendar.getInstance();
+        // Obsolete when > 24 hours
         return (now.getTimeInMillis() > (timestamp + (1000 * 60 * 60 * 24)));
     }
 

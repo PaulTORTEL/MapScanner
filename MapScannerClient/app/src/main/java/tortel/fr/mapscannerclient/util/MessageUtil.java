@@ -10,6 +10,16 @@ import tortel.fr.mapscannerlib.Filter;
 
 public class MessageUtil {
 
+    /**
+     *
+     * @param type: type of the request (CODE given by MapScannerLib)
+     * @param group: the category of data to be retrieved
+     * @param endpoint: the subcategory of the data to be retrieved
+     * @param groupId: the ID of the place (optional)
+     * @param clientMessenger: the messenger to refer to once the data will be retrieved by MapScanner
+     * @param params: the params such as the location, the number of places to retrieves etc.
+     * @return
+     */
     public static Message makeMessage(int type, String group, String endpoint, String groupId, Messenger clientMessenger, Map<String, String> params) {
         Message msg = Message.obtain(null, type);
         Bundle bundle = new Bundle();
